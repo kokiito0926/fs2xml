@@ -1,0 +1,42 @@
+{
+	"name": "@kokiito0926/fs2xml",
+	"version": "0.0.0",
+	"private": false,
+	"description": "fs2xmlを用いれば、ファイルをXML形式でまとめることができます。",
+	"keywords": [
+		"cli",
+		"bash",
+		"shell",
+		"script",
+		"nodejs",
+		"fs",
+		"xml",
+		"fs2xml"
+	],
+	"homepage": "https://github.com/kokiito0926/fs2xml#readme",
+	"publishConfig": {
+		"access": "public"
+	},
+	"bin": {
+		"fs2xml": "index.js"
+	},
+	"bugs": {
+		"url": "https://github.com/kokiito0926/fs2xml/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/kokiito0926/fs2xml.git"
+	},
+	"license": "MIT",
+	"author": "Koki Ito <kokiito0926@gmail.com>",
+	"type": "module",
+	"scripts": {
+		"test": "node --test"
+	},
+	"dependencies": {
+		"zx": "^8.8.4"
+	},
+	"engines": {
+		"node": ">=24.0.0"
+	}
+}
