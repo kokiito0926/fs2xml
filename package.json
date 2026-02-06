@@ -2,7 +2,7 @@
 	"name": "@kokiito0926/fs2xml",
 	"version": "0.0.1",
 	"private": false,
-	"description": "fs2xmlを用いれば、ファイルをXML形式でまとめることができます。",
+	"description": "ファイルをXML形式でまとめることができます。",
 	"keywords": [
 		"cli",
 		"bash",
