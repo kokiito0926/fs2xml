@@ -29,6 +29,7 @@ const ignorePatterns = [...defaultIgnore, ...userIgnore].filter(Boolean);
 let files = await glob(target, {
 	ignore: ignorePatterns,
 	nodir: true,
+	dot: true,
 });
 
 files = files.filter((file) => {
