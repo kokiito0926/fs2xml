@@ -1,13 +1,34 @@
 #!/usr/bin/env node
 
+// >> $ ./index.js "./example/**/*.txt"
+// >> $ ./index.js "./example/**/*.txt" --ignore "./example/ignore/**"
+
+// >> $ ./index.js "./example/example.txt"
+// >> $ ./index.js "./example/sub/example.js"
+
 // >> $ ./index.js ../../workspace/
 // >> $ ./index.js ../../workspace/ > ./example.xml
 
-import { fs, path, minimist } from "zx";
+import { fs, path, minimist, glob } from "zx";
 import { create } from "xmlbuilder2";
 
 const args = minimist(process.argv.slice(2));
-const target = args._[0] || ".";
+const target = args._[0] || "**/*";
+// const target = args._[0] || ".";
+// console.log(target);
+
+const defaultIgnore = ["node_modules/**", ".git/**"];
+
+const userIgnore = args.ignore ? (Array.isArray(args.ignore) ? args.ignore : [args.ignore]) : [];
+
+const ignorePatterns = [...defaultIgnore, ...userIgnore].filter(Boolean);
+
+const files = await glob(target, {
+	ignore: ignorePatterns,
+	nodir: true,
+});
+// console.log(files);
+// process.exit();
 
 async function getFileData(filePath) {
 	let content = await fs.readFile(filePath, "utf8");
@@ -23,17 +44,28 @@ async function getFileData(filePath) {
 	};
 }
 
+if (files.length === 0) {
+	process.stderr.write(`No files matched the pattern: ${pattern}\n`);
+	process.exit(0);
+}
+
+/*
 if (!fs.existsSync(target)) {
 	console.error(`Error: Cannnot access '${target}'; No such file or directory.`);
 	process.exit(1);
 }
+*/
 
+/*
 const stats = await fs.stat(target);
+*/
 
 let xmlOutput = "";
 
-if (stats.isFile()) {
-	const data = await getFileData(target);
+if (files.length === 1) {
+	// if (stats.isFile()) {
+	const data = await getFileData(files[0]);
+	// const data = await getFileData(target);
 	if (!data) {
 		process.exit(1);
 	}
@@ -47,25 +79,33 @@ if (stats.isFile()) {
 		.txt(data.path)
 		.up()
 		.ele("content")
-		.txt(data.content)
+		.dat(data.content)
 		.up()
+		// .ele("content")
+		// .txt(data.content)
+		// .up()
 		.end({ prettyPrint: true });
 } else {
+	/*
 	const files = await fs.readdir(target, { recursive: true });
 	if (!files.length) {
 		process.exit(1);
 	}
+	*/
 	// console.log(files);
 
 	const allFiles = [];
 	for (const file of files) {
+		/*
 		const filePath = path.join(target, file);
 		const fStats = await fs.stat(filePath);
 		if (fStats.isDirectory()) continue;
+		*/
 
 		// console.error(file);
 
-		const fileData = await getFileData(filePath);
+		const fileData = await getFileData(file);
+		// const fileData = await getFileData(filePath);
 		if (!fileData) continue;
 
 		allFiles.push(fileData);
@@ -85,8 +125,11 @@ if (stats.isFile()) {
 			.txt(f.path)
 			.up()
 			.ele("content")
-			.txt(f.content)
+			.dat(f.content)
 			.up()
+			// .ele("content")
+			// .txt(f.content)
+			// .up()
 			.up();
 	}
 	xmlOutput = root.end({ prettyPrint: true });
