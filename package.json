@@ -1,6 +1,6 @@
 {
 	"name": "@kokiito0926/fs2xml",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"private": false,
 	"description": "ファイルをXML形式でまとめることができます。",
 	"keywords": [
