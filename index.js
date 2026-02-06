@@ -8,9 +8,17 @@
 
 import { fs, path, minimist, glob } from "zx";
 import { create } from "xmlbuilder2";
+import ignore from "ignore";
 
 const args = minimist(process.argv.slice(2));
 const target = args._[0] || "**/*";
+
+let ig = ignore();
+const gitignorePath = path.join(process.cwd(), ".gitignore");
+if (fs.existsSync(gitignorePath)) {
+	const gitignoreContent = await fs.readFile(gitignorePath, "utf8");
+	ig.add(gitignoreContent);
+}
 
 const defaultIgnore = ["node_modules/**", ".git/**"];
 
@@ -18,9 +26,15 @@ const userIgnore = args.ignore ? (Array.isArray(args.ignore) ? args.ignore : [ar
 
 const ignorePatterns = [...defaultIgnore, ...userIgnore].filter(Boolean);
 
-const files = await glob(target, {
+let files = await glob(target, {
 	ignore: ignorePatterns,
 	nodir: true,
+});
+
+files = files.filter((file) => {
+	const relativePath = path.relative(process.cwd(), file);
+	if (relativePath === "") return true;
+	return !ig.ignores(relativePath);
 });
 
 async function getFileData(filePath) {
