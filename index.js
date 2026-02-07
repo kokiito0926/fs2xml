@@ -46,11 +46,14 @@ async function loadNearestGitignore(targetPattern) {
 
 const args = minimist(process.argv.slice(2));
 const target = args._[0] || "**/*";
+const dot = args.dot || false;
+const gitignore = args.gitignore || true;
 
-const { ig, baseDir } = await loadNearestGitignore(target);
+const { ig, baseDir } =
+	gitignore == false ? { ig: ignore(), baseDir: process.cwd() } : await loadNearestGitignore(target);
 
-// const defaultIgnore = [];
-const defaultIgnore = ["node_modules/**", ".git/**"];
+const defaultIgnore = [];
+// const defaultIgnore = ["node_modules/**", ".git/**"];
 
 const userIgnore = args.ignore ? (Array.isArray(args.ignore) ? args.ignore : [args.ignore]) : [];
 
@@ -59,7 +62,7 @@ const ignorePatterns = [...defaultIgnore, ...userIgnore].filter(Boolean);
 let files = await glob(target, {
 	ignore: ignorePatterns,
 	nodir: true,
-	dot: true,
+	dot: dot,
 });
 
 files = files.filter((file) => {
