@@ -44,10 +44,10 @@ $ fs2xml "./src/**/*" --dot true
 
 デフォルトでは、自動的に.gitignoreが読み込まれるようになっております。  
 globのパターンの親ディレクトリから、現在の作業中のディレクトリまでさかのぼり、.gitignoreが探索されます。  
---gitignoreのオプションを用いれば、そのような挙動を無効化することができます。
+--gitignoreのオプションにfalseを渡すようにすれば、そのような挙動を無効化することができます。
 
 ```bash
-$ fs2xml "./src/**/*" --gitignore true
+$ fs2xml "./src/**/*" --gitignore false
 ```
 
 ## 出力例
