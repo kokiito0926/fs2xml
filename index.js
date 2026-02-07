@@ -9,17 +9,47 @@
 import { fs, path, minimist, glob } from "zx";
 import { create } from "xmlbuilder2";
 import ignore from "ignore";
+import globParent from "glob-parent";
+
+async function loadNearestGitignore(targetPattern) {
+	const ig = ignore();
+
+	const parentDir = globParent(targetPattern);
+	let currentDir = path.resolve(parentDir);
+
+	try {
+		const stats = await fs.stat(currentDir);
+		if (stats.isFile()) {
+			currentDir = path.dirname(currentDir);
+		}
+	} catch (e) {}
+
+	while (true) {
+		const gitignorePath = path.join(currentDir, ".gitignore");
+
+		if (fs.existsSync(gitignorePath)) {
+			// console.log(gitignorePath);
+
+			const content = await fs.readFile(gitignorePath, "utf8");
+			ig.add(content);
+
+			return { ig, baseDir: currentDir };
+		}
+
+		const parent = path.dirname(currentDir);
+		if (parent === currentDir) break;
+		currentDir = parent;
+	}
+
+	return { ig, baseDir: process.cwd() };
+}
 
 const args = minimist(process.argv.slice(2));
 const target = args._[0] || "**/*";
 
-let ig = ignore();
-const gitignorePath = path.join(process.cwd(), ".gitignore");
-if (fs.existsSync(gitignorePath)) {
-	const gitignoreContent = await fs.readFile(gitignorePath, "utf8");
-	ig.add(gitignoreContent);
-}
+const { ig, baseDir } = await loadNearestGitignore(target);
 
+// const defaultIgnore = [];
 const defaultIgnore = ["node_modules/**", ".git/**"];
 
 const userIgnore = args.ignore ? (Array.isArray(args.ignore) ? args.ignore : [args.ignore]) : [];
@@ -33,7 +63,7 @@ let files = await glob(target, {
 });
 
 files = files.filter((file) => {
-	const relativePath = path.relative(process.cwd(), file);
+	const relativePath = path.relative(baseDir, path.resolve(file));
 	if (relativePath === "") return true;
 	return !ig.ignores(relativePath);
 });
