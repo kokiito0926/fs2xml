@@ -10,6 +10,7 @@ import { fs, path, minimist, glob } from "zx";
 import { create } from "xmlbuilder2";
 import ignore from "ignore";
 import globParent from "glob-parent";
+import xml2js from "xml2js";
 
 async function loadNearestGitignore(targetPattern) {
 	const ig = ignore();
@@ -91,6 +92,14 @@ if (files.length === 0) {
 }
 
 let xmlOutput = "";
+let xmlObject = {};
+
+const builder = new xml2js.Builder({
+	cdata: true,
+	xmldec: { version: "1.0", encoding: "UTF-8" },
+	renderOpts: { pretty: true },
+	// renderOpts: { pretty: true, indent: "  ", newline: "\n" },
+});
 
 if (files.length === 1) {
 	const data = await getFileData(files[0]);
@@ -98,6 +107,15 @@ if (files.length === 1) {
 		process.exit(1);
 	}
 
+	xmlObject = {
+		file: {
+			name: data.name,
+			path: data.path,
+			content: data.content,
+		},
+	};
+
+	/*
 	xmlOutput = create({ version: "1.0", encoding: "UTF-8" })
 		.ele("file")
 		.ele("name")
@@ -111,6 +129,7 @@ if (files.length === 1) {
 		.dat(data.content)
 		.up()
 		.end({ prettyPrint: true });
+	*/
 } else {
 	const allFiles = [];
 	for (const file of files) {
@@ -124,6 +143,17 @@ if (files.length === 1) {
 	}
 	// console.log(allFiles);
 
+	xmlObject = {
+		files: {
+			file: allFiles.map((f) => ({
+				name: f.name,
+				path: f.path,
+				content: f.content,
+			})),
+		},
+	};
+
+	/*
 	const root = create({ version: "1.0", encoding: "UTF-8" }).ele("files");
 	for (const f of allFiles) {
 		root.ele("file")
@@ -140,6 +170,8 @@ if (files.length === 1) {
 			.up();
 	}
 	xmlOutput = root.end({ prettyPrint: true });
+	*/
 }
 
+xmlOutput = builder.buildObject(xmlObject);
 console.log(xmlOutput);
