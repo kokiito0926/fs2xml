@@ -80,8 +80,7 @@ async function getFileData(filePath) {
 }
 
 if (files.length === 0) {
-	process.stderr.write(`No files matched the pattern: ${pattern}\n`);
-	process.exit(0);
+	process.exit(1);
 }
 
 let xmlOutput = "";
