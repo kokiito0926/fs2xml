@@ -107,8 +107,8 @@ if (files.length === 1) {
 		.txt(data.path)
 		.up()
 		.ele("content")
-		.txt(data.content)
-		// .dat(data.content)
+		// .txt(data.content)
+		.dat(data.content)
 		.up()
 		.end({ prettyPrint: true });
 } else {
@@ -134,8 +134,8 @@ if (files.length === 1) {
 			.txt(f.path)
 			.up()
 			.ele("content")
-			.txt(f.content)
-			// .dat(f.content)
+			// .txt(f.content)
+			.dat(f.content)
 			.up()
 			.up();
 	}
