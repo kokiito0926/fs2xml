@@ -1,13 +1,6 @@
 #!/usr/bin/env node
 
-// >> $ ./index.js "./example/example.txt"
-// >> $ ./index.js "./example/sub/example.js"
-
-// >> $ ./index.js "./example/**/*.txt"
-// >> $ ./index.js "./example/**/*.txt" --ignore "./example/ignore/**"
-
 import { fs, path, minimist, glob } from "zx";
-import { create } from "xmlbuilder2";
 import ignore from "ignore";
 import globParent from "glob-parent";
 import xml2js from "xml2js";
@@ -29,8 +22,6 @@ async function loadNearestGitignore(targetPattern) {
 		const gitignorePath = path.join(currentDir, ".gitignore");
 
 		if (fs.existsSync(gitignorePath)) {
-			// console.log(gitignorePath);
-
 			const content = await fs.readFile(gitignorePath, "utf8");
 			ig.add(content);
 
@@ -54,7 +45,6 @@ const { ig, baseDir } =
 	gitignore == false ? { ig: ignore(), baseDir: process.cwd() } : await loadNearestGitignore(target);
 
 const defaultIgnore = [];
-// const defaultIgnore = ["node_modules/**", ".git/**"];
 
 const userIgnore = args.ignore ? (Array.isArray(args.ignore) ? args.ignore : [args.ignore]) : [];
 
@@ -101,7 +91,6 @@ const builder = new xml2js.Builder({
 	cdata: true,
 	xmldec: { version: "1.0", encoding: "UTF-8" },
 	renderOpts: { pretty: true },
-	// renderOpts: { pretty: true, indent: "  ", newline: "\n" },
 });
 
 if (files.length === 1) {
@@ -117,22 +106,6 @@ if (files.length === 1) {
 			content: data.content,
 		},
 	};
-
-	/*
-	xmlOutput = create({ version: "1.0", encoding: "UTF-8" })
-		.ele("file")
-		.ele("name")
-		.txt(data.name)
-		.up()
-		.ele("path")
-		.txt(data.path)
-		.up()
-		.ele("content")
-		// .txt(data.content)
-		.dat(data.content)
-		.up()
-		.end({ prettyPrint: true });
-	*/
 } else {
 	const allFiles = [];
 	for (const file of files) {
@@ -144,7 +117,6 @@ if (files.length === 1) {
 	if (!allFiles.length) {
 		process.exit(1);
 	}
-	// console.log(allFiles);
 
 	xmlObject = {
 		files: {
@@ -155,25 +127,6 @@ if (files.length === 1) {
 			})),
 		},
 	};
-
-	/*
-	const root = create({ version: "1.0", encoding: "UTF-8" }).ele("files");
-	for (const f of allFiles) {
-		root.ele("file")
-			.ele("name")
-			.txt(f.name)
-			.up()
-			.ele("path")
-			.txt(f.path)
-			.up()
-			.ele("content")
-			// .txt(f.content)
-			.dat(f.content)
-			.up()
-			.up();
-	}
-	xmlOutput = root.end({ prettyPrint: true });
-	*/
 }
 
 xmlOutput = builder.buildObject(xmlObject);
