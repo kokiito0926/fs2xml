@@ -79,6 +79,9 @@ async function getFileData(filePath) {
 	content = content.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "");
 	if (!content) return null;
 
+	content = content.replace(/]]>/g, "]]]]><![CDATA[>");
+	if (!content) return null;
+
 	return {
 		name: path.basename(filePath),
 		path: filePath.replace(/\\/g, "/"),
