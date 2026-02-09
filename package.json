@@ -1,6 +1,6 @@
 {
 	"name": "@kokiito0926/fs2xml",
-	"version": "0.0.9",
+	"version": "0.0.10",
 	"private": false,
 	"description": "ファイルをXML形式でまとめることができるコマンドラインのツールです。",
 	"keywords": [
