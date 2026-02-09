@@ -45,7 +45,7 @@ const { ig, baseDir } =
 
 const defaultIgnore = [];
 
-const userIgnore = args.ignore ? (Array.isArray(args.ignore) ? args.ignore : [args.ignore]) : [];
+const userIgnore = argv.ignore ? (Array.isArray(argv.ignore) ? argv.ignore : [argv.ignore]) : [];
 
 const ignorePatterns = [...defaultIgnore, ...userIgnore].filter(Boolean);
 
