@@ -5,6 +5,13 @@ import ignore from "ignore";
 import globParent from "glob-parent";
 import xml2js from "xml2js";
 
+function isBinary(buffer) {
+	for (let i = 0; i < Math.min(buffer.length, 4096); i++) {
+		if (buffer[i] === 0) return true;
+	}
+	return false;
+}
+
 async function loadNearestGitignore(targetPattern) {
 	const ig = ignore();
 
@@ -62,7 +69,13 @@ files = files.filter((file) => {
 });
 
 async function getFileData(filePath) {
-	let content = await fs.readFile(filePath, "utf8");
+	const buffer = await fs.readFile(filePath);
+	if (isBinary(buffer)) {
+		return null
+	}
+
+	let content = buffer.toString("utf8");
+	// let content = await fs.readFile(filePath, "utf8");
 	if (!content) return null;
 
 	content = content.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "");
