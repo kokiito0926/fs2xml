@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { fs, path, minimist, glob } from "zx";
+import { fs, path, argv, glob } from "zx";
 import ignore from "ignore";
 import globParent from "glob-parent";
 import xml2js from "xml2js";
@@ -36,10 +36,9 @@ async function loadNearestGitignore(targetPattern) {
 	return { ig, baseDir: process.cwd() };
 }
 
-const args = minimist(process.argv.slice(2));
-const target = args._[0] || "**/*";
-const dot = args.dot || false;
-const gitignore = args.gitignore || true;
+const target = argv?._[0] || "**/*";
+const dot = argv?.dot || false;
+const gitignore = argv?.gitignore || true;
 
 const { ig, baseDir } =
 	gitignore == false ? { ig: ignore(), baseDir: process.cwd() } : await loadNearestGitignore(target);
