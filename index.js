@@ -23,12 +23,15 @@ async function loadNearestGitignore(targetPattern) {
 		if (stats.isFile()) {
 			currentDir = path.dirname(currentDir);
 		}
-	} catch (e) {}
+	} catch (e) { }
 
+	// console.error('Debug: loading gitignore for', targetPattern, 'baseDir:', currentDir);
 	while (true) {
 		const gitignorePath = path.join(currentDir, ".gitignore");
+		// console.error('Debug: checking', gitignorePath);
 
 		if (fs.existsSync(gitignorePath)) {
+			// console.error('Debug: found gitignore at', gitignorePath);
 			const content = await fs.readFile(gitignorePath, "utf8");
 			ig.add(content);
 
@@ -43,17 +46,23 @@ async function loadNearestGitignore(targetPattern) {
 	return { ig, baseDir: process.cwd() };
 }
 
-const target = argv?._[0] || "**/*";
-const dot = argv?.dot || false;
-const gitignore = argv?.gitignore || true;
+const parseBool = (val, defaultVal) => {
+	if (val === undefined || val === null) return defaultVal;
+	if (typeof val === "boolean") return val;
+	if (val === "true") return true;
+	if (val === "false") return false;
+	return !!val;
+};
+
+const target = (argv?._[0] || "**/*").replace(/\\/g, "/");
+const dot = parseBool(argv?.dot, false);
+const useGitignore = parseBool(argv?.gitignore, true);
 
 const { ig, baseDir } =
-	gitignore == false ? { ig: ignore(), baseDir: process.cwd() } : await loadNearestGitignore(target);
+	useGitignore === false ? { ig: ignore(), baseDir: process.cwd() } : await loadNearestGitignore(target);
 
 const defaultIgnore = [];
-
 const userIgnore = argv.ignore ? (Array.isArray(argv.ignore) ? argv.ignore : [argv.ignore]) : [];
-
 const ignorePatterns = [...defaultIgnore, ...userIgnore].filter(Boolean);
 
 let files = await glob(target, {
@@ -71,18 +80,19 @@ files = files.filter((file) => {
 async function getFileData(filePath) {
 	const buffer = await fs.readFile(filePath);
 	if (isBinary(buffer)) {
-		return null
+		return null;
 	}
 
 	let content = buffer.toString("utf8");
-	// let content = await fs.readFile(filePath, "utf8");
 	if (!content) return null;
 
-	content = content.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "");
+	// Filter invalid XML 1.0 characters: #x9, #xA, #xD, [#x20-#xD7FF], [#xE000-#xFFFD], [#x10000-#x10FFFF]
+	// Using a common regex for stripping restricted characters
+	content = content.replace(/[^\x09\x0A\x0D\x20-\uD7FF\uE000-\uFFFD\u{10000}-\u{10FFFF}]/gu, "");
 	if (!content) return null;
 
-	content = content.replace(/]]>/g, "]]]]><![CDATA[>");
-	if (!content) return null;
+	// content = content.replace(/]]>/g, "]]]]><![CDATA[>");
+	// if (!content) return null;
 
 	return {
 		name: path.basename(filePath),
@@ -95,8 +105,16 @@ if (files.length === 0) {
 	process.exit(1);
 }
 
-let xmlOutput = "";
-let xmlObject = {};
+const allFiles = [];
+for (const file of files) {
+	const fileData = await getFileData(file);
+	if (!fileData) continue;
+	allFiles.push(fileData);
+}
+
+if (!allFiles.length) {
+	process.exit(1);
+}
 
 const builder = new xml2js.Builder({
 	cdata: true,
@@ -104,41 +122,17 @@ const builder = new xml2js.Builder({
 	renderOpts: { pretty: true },
 });
 
-if (files.length === 1) {
-	const data = await getFileData(files[0]);
-	if (!data) {
-		process.exit(1);
-	}
+// Always use <files><file>...</file></files> structure for consistency
+// Using { _: content } ensures xml2js handles CDATA correctly for strings containing ]]>
+const xmlObject = {
+	files: {
+		file: allFiles.map((f) => ({
+			name: f.name,
+			path: f.path,
+			content: { _: f.content },
+		})),
+	},
+};
 
-	xmlObject = {
-		file: {
-			name: data.name,
-			path: data.path,
-			content: data.content,
-		},
-	};
-} else {
-	const allFiles = [];
-	for (const file of files) {
-		const fileData = await getFileData(file);
-		if (!fileData) continue;
-
-		allFiles.push(fileData);
-	}
-	if (!allFiles.length) {
-		process.exit(1);
-	}
-
-	xmlObject = {
-		files: {
-			file: allFiles.map((f) => ({
-				name: f.name,
-				path: f.path,
-				content: f.content,
-			})),
-		},
-	};
-}
-
-xmlOutput = builder.buildObject(xmlObject);
+const xmlOutput = builder.buildObject(xmlObject);
 console.log(xmlOutput);
