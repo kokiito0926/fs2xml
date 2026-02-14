@@ -2,7 +2,6 @@
 
 import { fs, path, argv, glob } from "zx";
 import ignore from "ignore";
-import globParent from "glob-parent";
 import xml2js from "xml2js";
 
 function isBinary(buffer) {

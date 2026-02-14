@@ -34,7 +34,6 @@
 		"test": "node --test"
 	},
 	"dependencies": {
-		"glob-parent": "^6.0.2",
 		"ignore": "^7.0.5",
 		"xml2js": "^0.6.2",
 		"zx": "^8.8.4"
