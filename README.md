@@ -32,7 +32,7 @@ $ fs2xml "./src/**/*.txt"
 --ignoreのオプションを用いると、特定のパターンを除外することができます。
 
 ```bash
-$ fs2xml "./src/**/*" --ignore "./src/test/**" --ignore "**/*.log"
+$ fs2xml "./src/**/*" --ignore "**/*.log"
 ```
 
 デフォルトでは、ドットのファイルは読み込まれません。  
