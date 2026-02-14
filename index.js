@@ -54,7 +54,7 @@ const parseBool = (val, defaultVal) => {
 
 const searchRoot = path.resolve(argv._[0] || ".");
 
-const includePattern = argv.pattern || "**/*";
+const includePattern = argv.include || "**/*";
 
 const ignorePattern = [];
 if(argv.ignore) {
