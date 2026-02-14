@@ -113,12 +113,6 @@ if (!allFiles.length) {
 	process.exit(1);
 }
 
-const builder = new xml2js.Builder({
-	cdata: true,
-	xmldec: { version: "1.0", encoding: "UTF-8" },
-	renderOpts: { pretty: true },
-});
-
 // Always use <files><file>...</file></files> structure for consistency
 // Using { _: content } ensures xml2js handles CDATA correctly for strings containing ]]>
 const xmlObject = {
@@ -130,6 +124,12 @@ const xmlObject = {
 		})),
 	},
 };
+
+const builder = new xml2js.Builder({
+	cdata: true,
+	xmldec: { version: "1.0", encoding: "UTF-8" },
+	renderOpts: { pretty: true },
+});
 
 const xmlOutput = builder.buildObject(xmlObject);
 console.log(xmlOutput);
