@@ -61,9 +61,10 @@ const useGitignore = parseBool(argv?.gitignore, true);
 const { ig, baseDir } =
 	useGitignore === false ? { ig: ignore(), baseDir: process.cwd() } : await loadNearestGitignore(target);
 
-const defaultIgnore = [];
-const userIgnore = argv.ignore ? (Array.isArray(argv.ignore) ? argv.ignore : [argv.ignore]) : [];
-const ignorePatterns = [...defaultIgnore, ...userIgnore].filter(Boolean);
+const ignorePatterns = [];
+if(argv.ignore) {
+	ignorePatterns.push(argv.ignore);
+}
 
 let files = await glob(target, {
 	ignore: ignorePatterns,
