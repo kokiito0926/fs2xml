@@ -20,34 +20,33 @@ $ fs2xml
 特定のディレクトリ内のすべてのファイルをXML形式でまとめます。
 
 ```bash
-$ fs2xml "./src/**/*"
+$ fs2xml ./src
 ```
 
-特定のディレクトリ内の特定の拡張子のみを対象にして、XML形式でまとめます。
+--includeのオプションを用いると、特定のパターンを含めることができます。
 
 ```bash
-$ fs2xml "./src/**/*.txt"
+$ fs2xml ./src --include "**/*.txt"
 ```
 
 --ignoreのオプションを用いると、特定のパターンを除外することができます。
 
 ```bash
-$ fs2xml "./src/**/*" --ignore "**/*.log"
+$ fs2xml ./src --ignore "**/*.log"
 ```
 
 デフォルトでは、ドットのファイルは読み込まれません。  
---dotのオプションを用いると、ドットのファイルを読み込むことができます。
+--dotのオプションを用いると、ドットのファイルも読み込むことができます。
 
 ```bash
-$ fs2xml "./src/**/*" --dot true
+$ fs2xml ./src/ --dot true
 ```
 
-デフォルトでは、自動的に.gitignoreが読み込まれるようになっております。  
-globのパターンの親ディレクトリから、現在の作業中のディレクトリまでさかのぼり、.gitignoreが探索されます。  
+デフォルトでは、.gitignoreが自動的に読み込まれるようになっております。  
 --gitignoreのオプションにfalseを渡すようにすれば、そのような挙動を無効化することができます。
 
 ```bash
-$ fs2xml "./src/**/*" --gitignore false
+$ fs2xml ./src --gitignore false
 ```
 
 ## 出力例
