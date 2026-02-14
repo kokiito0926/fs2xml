@@ -12,11 +12,9 @@ function isBinary(buffer) {
 	return false;
 }
 
-async function loadNearestGitignore(targetPattern) {
+async function loadNearestGitignore(startDir) {
 	const ig = ignore();
-
-	const parentDir = globParent(targetPattern);
-	let currentDir = path.resolve(parentDir);
+	const currentDir = startDir;
 
 	try {
 		const stats = await fs.stat(currentDir);
@@ -43,7 +41,7 @@ async function loadNearestGitignore(targetPattern) {
 		currentDir = parent;
 	}
 
-	return { ig, baseDir: process.cwd() };
+	return { ig, baseDir: targetPattern };
 }
 
 const parseBool = (val, defaultVal) => {
@@ -54,19 +52,22 @@ const parseBool = (val, defaultVal) => {
 	return !!val;
 };
 
-const target = (argv?._[0] || "**/*").replace(/\\/g, "/");
-const dot = parseBool(argv?.dot, false);
-const useGitignore = parseBool(argv?.gitignore, true);
+const searchRoot = path.resolve(argv._[0] || ".");
 
-const { ig, baseDir } =
-	useGitignore === false ? { ig: ignore(), baseDir: process.cwd() } : await loadNearestGitignore(target);
+const includePattern = argv.pattern || "**/*";
 
 const ignorePattern = [];
 if(argv.ignore) {
 	ignorePattern.push(argv.ignore);
 }
 
-let files = await glob(target, {
+const dot = parseBool(argv?.dot, false);
+
+const useGitignore = parseBool(argv?.gitignore, true);
+const { ig, baseDir } = useGitignore === false ? { ig: ignore(), baseDir: searchRoot } : await loadNearestGitignore(searchRoot);
+
+let files = await glob(includePattern, {
+	cwd: searchRoot,
 	nodir: true,
 	dot: dot,
 	ignore: ignorePattern,
@@ -77,9 +78,20 @@ if (files.length === 0) {
 }
 
 files = files.filter((file) => {
-	const relativePath = path.relative(baseDir, path.resolve(file));
-	if (relativePath === "") return true;
-	return !ig.ignores(relativePath);
+    const absoluteFile = path.resolve(searchRoot, file);
+    const absoluteBase = path.resolve(baseDir);
+
+    let relativeToGitignore = path.relative(absoluteBase, absoluteFile);
+
+    relativeToGitignore = relativeToGitignore.replace(/\\/g, "/");
+
+    if (relativeToGitignore.startsWith('..') || path.isAbsolute(relativeToGitignore)) {
+        return true; 
+    }
+
+    if (relativeToGitignore === "" || relativeToGitignore === ".") return true;
+
+    return !ig.ignores(relativeToGitignore);
 });
 
 if (files.length === 0) {
@@ -88,7 +100,9 @@ if (files.length === 0) {
 
 const allFiles = [];
 for (const file of files) {
-	const buffer = await fs.readFile(file);
+    const absolutePath = path.resolve(searchRoot, file);
+
+	const buffer = await fs.readFile(absolutePath);
 	if (isBinary(buffer)) continue;
 
 	let content = buffer.toString("utf8");
