@@ -12,6 +12,14 @@ function isBinary(buffer) {
 	return false;
 }
 
+const parseBool = (val, defaultVal) => {
+	if (val === undefined || val === null) return defaultVal;
+	if (typeof val === "boolean") return val;
+	if (val === "true") return true;
+	if (val === "false") return false;
+	return !!val;
+};
+
 async function loadNearestGitignore(startDir) {
 	const ig = ignore();
 	const currentDir = startDir;
@@ -23,13 +31,9 @@ async function loadNearestGitignore(startDir) {
 		}
 	} catch (e) { }
 
-	// console.error('Debug: loading gitignore for', targetPattern, 'baseDir:', currentDir);
 	while (true) {
 		const gitignorePath = path.join(currentDir, ".gitignore");
-		// console.error('Debug: checking', gitignorePath);
-
 		if (fs.existsSync(gitignorePath)) {
-			// console.error('Debug: found gitignore at', gitignorePath);
 			const content = await fs.readFile(gitignorePath, "utf8");
 			ig.add(content);
 
@@ -43,14 +47,6 @@ async function loadNearestGitignore(startDir) {
 
 	return { ig, baseDir: targetPattern };
 }
-
-const parseBool = (val, defaultVal) => {
-	if (val === undefined || val === null) return defaultVal;
-	if (typeof val === "boolean") return val;
-	if (val === "true") return true;
-	if (val === "false") return false;
-	return !!val;
-};
 
 const searchRoot = path.resolve(argv._[0] || ".");
 
