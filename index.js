@@ -50,11 +50,7 @@ async function loadNearestGitignore(startDir) {
 const searchRoot = path.resolve(argv._[0] || ".");
 
 const includePattern = argv.include || "**/*";
-
-const ignorePattern = [];
-if(argv.ignore) {
-	ignorePattern.push(argv.ignore);
-}
+const ignorePattern = argv.ignore ? [argv.ignore] : [];
 
 const dot = parseBool(argv?.dot, false);
 
