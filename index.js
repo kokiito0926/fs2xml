@@ -44,7 +44,7 @@ async function loadNearestGitignore(startDir) {
 		currentDir = parent;
 	}
 
-	return { ig, baseDir: targetPattern };
+	return { ig, baseDir: startDir };
 }
 
 const searchRoot = path.resolve(argv._[0] || ".");
