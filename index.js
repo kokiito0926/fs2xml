@@ -21,7 +21,7 @@ const parseBool = (val, defaultVal) => {
 
 async function loadNearestGitignore(startDir) {
 	const ig = ignore();
-	const currentDir = startDir;
+	let currentDir = startDir;
 
 	try {
 		const stats = await fs.stat(currentDir);
